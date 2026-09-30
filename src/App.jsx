@@ -34,6 +34,11 @@ function App() {
   const dashTriggerP1 = useRef(false);
   const dashTriggerP2 = useRef(false);
 
+  // Heartbeat & Sudden Death Vignette
+  const vignetteRef = useRef(null);
+  const heartbeatTimer = useRef(0);
+  const vignettePulse = useRef(0);
+
   const gameStateRef = useRef(createInitialState());
   const [uiState, setUiState] = useState(() => ({
     score: { p1: 0, p2: 0 },
@@ -311,11 +316,53 @@ function App() {
       }
     }
 
+    // 3. SUDDEN DEATH HEARTBEAT & PULSING VIGNETTE
+    const currentRadius = playMode === 'ONLINE_GUEST'
+      ? (latestSnapshotRef.current?.arenaRadius || THEME.arena.radius)
+      : gameStateRef.current.arenaRadius;
+
+    const isPlaying = playMode !== 'LOBBY' && (
+      playMode === 'ONLINE_GUEST'
+        ? latestSnapshotRef.current?.gameState === 'PLAYING'
+        : gameStateRef.current.gameState === 'PLAYING'
+    );
+
+    if (isPlaying && currentRadius < 265) {
+      // Danger scales 0 -> 1 as radius shrinks from 265 down to 170
+      const dangerRatio = Math.max(0, Math.min(1, (265 - currentRadius) / (265 - 170)));
+
+      // Tempo increases: 1.1s (slow suspense) down to 0.32s (rapid panic)
+      const bpmInterval = 1.1 - dangerRatio * 0.78;
+      heartbeatTimer.current -= dt;
+
+      if (heartbeatTimer.current <= 0) {
+        heartbeatTimer.current = bpmInterval;
+        sounds.playHeartbeat(0.4 + dangerRatio * 0.6);
+        vignettePulse.current = 1.0; // Visual heart pulse flash!
+      }
+
+      // Decay pulse
+      vignettePulse.current = Math.max(0, vignettePulse.current - dt * 3.5);
+
+      // Smoothly update vignette opacity without React re-render
+      if (vignetteRef.current) {
+        const opacity = dangerRatio * 0.25 + vignettePulse.current * dangerRatio * 0.75;
+        vignetteRef.current.style.opacity = opacity.toFixed(3);
+      }
+    } else {
+      if (vignetteRef.current && vignetteRef.current.style.opacity !== '0') {
+        vignetteRef.current.style.opacity = '0';
+      }
+    }
+
     ctx.restore();
   });
 
   return (
     <div className="game-container">
+      {/* Sudden Death Pulsing Red Vignette */}
+      <div ref={vignetteRef} className="danger-vignette" />
+
       <canvas ref={canvasRef} id="game-canvas" />
 
       {playMode === 'LOBBY' && (

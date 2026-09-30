@@ -116,6 +116,32 @@ class SoundEffects {
     osc.stop(now + 0.18);
   }
 
+  // Double-thump visceral heartbeat ("lub-dub")
+  playHeartbeat(intensity = 0.5) {
+    this.init();
+    const now = this.ctx.currentTime;
+    // Lub (lower, foundational beat)
+    this._thump(now, 60, 0.45 * intensity, 0.08);
+    // Dub (punchier, 110ms later)
+    this._thump(now + 0.11, 72, 0.35 * intensity, 0.07);
+  }
+
+  _thump(time, freq, gainVal, duration) {
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, time);
+    osc.frequency.exponentialRampToValueAtTime(25, time + duration);
+
+    gain.gain.setValueAtTime(gainVal, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(time);
+    osc.stop(time + duration);
+  }
 }
 
 export const sounds = new SoundEffects();
