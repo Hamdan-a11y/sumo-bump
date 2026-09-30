@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { sounds } from './audio';
+import { FighterCustomizer } from './components/FighterCustomizer';
 import { Joystick } from './components/Joystick';
 import { Lobby } from './components/Lobby';
 import { Overlay } from './components/Overlay';
@@ -20,6 +21,8 @@ function App() {
 
   const [playMode, setPlayMode] = useState('LOBBY');
   const [waitingRoomId, setWaitingRoomId] = useState(null);
+  const [showCustomizer, setShowCustomizer] = useState(false);
+  const customFaceUrl = useRef(null);
 
   const transportRef = useRef(null);
   const guestInputRef = useRef({ x: 0, y: 0 });
@@ -45,9 +48,26 @@ function App() {
     });
   };
 
+  const applyFaceImage = (player, dataUrl) => {
+    if (!dataUrl) return;
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = () => {
+      player.faceImage = img;
+    };
+  };
+
+  const handleSaveFace = (dataUrl) => {
+    customFaceUrl.current = dataUrl;
+    applyFaceImage(gameStateRef.current.p1, dataUrl);
+  };
+
   const startLocalPlay = () => {
     sounds.init();
     gameStateRef.current = createInitialState();
+    if (customFaceUrl.current) {
+      applyFaceImage(gameStateRef.current.p1, customFaceUrl.current);
+    }
     syncUi(gameStateRef.current);
     setPlayMode('LOCAL');
   };
@@ -99,11 +119,17 @@ function App() {
         setWaitingRoomId(null);
         setPlayMode('ONLINE_HOST');
         gameStateRef.current = createInitialState();
+        if (customFaceUrl.current) {
+          applyFaceImage(gameStateRef.current.p1, customFaceUrl.current);
+          transport.send({ type: 'PLAYER_FACE', face: customFaceUrl.current, forPlayer: 'p1' });
+        }
         syncUi(gameStateRef.current);
       },
       onData: (data) => {
         if (data.type === 'GUEST_INPUT') {
           guestInputRef.current = data.input;
+        } else if (data.type === 'PLAYER_FACE') {
+          applyFaceImage(gameStateRef.current.p2, data.face);
         }
       },
       onDisconnected: () => {
@@ -123,6 +149,9 @@ function App() {
     transport.joinRoom(roomId, {
       onConnected: () => {
         setPlayMode('ONLINE_GUEST');
+        if (customFaceUrl.current) {
+          transport.send({ type: 'PLAYER_FACE', face: customFaceUrl.current, forPlayer: 'p2' });
+        }
       },
       onData: (data) => {
         if (data.type === 'SNAPSHOT') {
@@ -132,6 +161,8 @@ function App() {
           sounds.playBump();
           effectsRef.current.triggerShake(7);
           effectsRef.current.spawnSparks(data.x, data.y);
+        } else if (data.type === 'PLAYER_FACE') {
+          applyFaceImage(gameStateRef.current.p1, data.face);
         }
       },
       onDisconnected: () => {
@@ -144,6 +175,9 @@ function App() {
   const handleRematch = () => {
     if (playMode === 'ONLINE_GUEST') return;
     gameStateRef.current = createInitialState();
+    if (customFaceUrl.current) {
+      applyFaceImage(gameStateRef.current.p1, customFaceUrl.current);
+    }
     syncUi(gameStateRef.current);
   };
 
@@ -155,7 +189,6 @@ function App() {
     const effects = effectsRef.current;
     effects.update(dt);
 
-    // Apply Screen Shake offset
     ctx.save();
     if (effects.shakeIntensity > 0) {
       const sx = (Math.random() - 0.5) * effects.shakeIntensity;
@@ -182,7 +215,6 @@ function App() {
 
         const prevScore = `${state.score.p1}-${state.score.p2}-${state.gameState}`;
         
-        // Physics update with event callbacks (bumps, powerups, ringouts)
         updateGameState(state, { p1: p1Input, p2: p2Input }, dt, (event) => {
           if (event.type === 'BUMP') {
             sounds.playBump();
@@ -208,8 +240,8 @@ function App() {
           transportRef.current?.send({
             type: 'SNAPSHOT',
             state: {
-              p1: state.p1,
-              p2: state.p2,
+              p1: { ...state.p1, faceImage: undefined },
+              p2: { ...state.p2, faceImage: undefined },
               arenaRadius: state.arenaRadius,
               powerUp: state.powerUp,
               score: state.score,
@@ -272,7 +304,15 @@ function App() {
           onCreateRoom={createOnlineRoom}
           onJoinRoom={joinOnlineRoom}
           onPlayLocal={startLocalPlay}
+          onOpenCustomizer={() => setShowCustomizer(true)}
           waitingRoomId={waitingRoomId}
+        />
+      )}
+
+      {showCustomizer && (
+        <FighterCustomizer
+          onSave={handleSaveFace}
+          onClose={() => setShowCustomizer(false)}
         />
       )}
 

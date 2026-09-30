@@ -1,0 +1,66 @@
+.customizer-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 15, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 40;
+}
+
+.customizer-card {
+  width: min(90vw, 360px);
+  padding: 32px 28px;
+  background: rgba(18, 23, 35, 0.95);
+  border-radius: 24px;
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 24px 60px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.customizer-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.sketch-canvas {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.color-palette {
+  display: flex;
+  gap: 12px;
+}
+
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 140ms var(--ease-out);
+}
+
+.color-swatch.active {
+  transform: scale(1.15);
+  border-color: #ffffff;
+}
+
+.customizer-btn-row {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}

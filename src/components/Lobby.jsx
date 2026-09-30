@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './Lobby.css';
 
-export function Lobby({ onCreateRoom, onJoinRoom, onPlayLocal, waitingRoomId }) {
+export function Lobby({ onCreateRoom, onJoinRoom, onPlayLocal, onOpenCustomizer, waitingRoomId }) {
   const [inputCode, setInputCode] = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -60,6 +60,10 @@ export function Lobby({ onCreateRoom, onJoinRoom, onPlayLocal, waitingRoomId }) 
             </div>
 
             <div style={{ margin: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }} />
+
+            <button className="lobby-btn" onClick={onOpenCustomizer}>
+              🎨 Draw Your Fighter
+            </button>
 
             <button className="lobby-btn" onClick={onPlayLocal}>
               Play Local (1 Device)

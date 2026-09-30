@@ -66,14 +66,35 @@ export function drawPlayer(ctx, player) {
   ctx.fill();
   ctx.restore();
 
-  // 3. Directional eyes
+  // 3. Render Custom Face OR default eyes
   const angle = Math.atan2(player.vy || 0, player.vx || 1);
-  const eyeOffset = player.radius * 0.45;
-  const eyeX = player.x + Math.cos(angle) * eyeOffset;
-  const eyeY = player.y + Math.sin(angle) * eyeOffset;
 
-  ctx.beginPath();
-  ctx.arc(eyeX, eyeY, 4.5, 0, Math.PI * 2);
-  ctx.fillStyle = '#0a0d14';
-  ctx.fill();
+  if (player.faceImage) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius - 2, 0, Math.PI * 2);
+    ctx.clip(); // Keep drawing clipped inside the circular blob!
+
+    ctx.translate(player.x, player.y);
+    ctx.rotate(angle);
+    ctx.drawImage(
+      player.faceImage,
+      -player.radius,
+      -player.radius,
+      player.radius * 2,
+      player.radius * 2
+    );
+    ctx.restore();
+  } else {
+    // Default directional eyes
+    const eyeOffset = player.radius * 0.45;
+    const eyeX = player.x + Math.cos(angle) * eyeOffset;
+    const eyeY = player.y + Math.sin(angle) * eyeOffset;
+
+    ctx.beginPath();
+    ctx.arc(eyeX, eyeY, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#0a0d14';
+    ctx.fill();
+  }
 }
+
