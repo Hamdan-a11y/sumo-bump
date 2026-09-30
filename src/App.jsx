@@ -25,11 +25,14 @@ function App() {
   const customFaceUrl = useRef(null);
 
   const transportRef = useRef(null);
-  const guestInputRef = useRef({ x: 0, y: 0 });
+  const guestInputRef = useRef({ x: 0, y: 0, dash: false });
   const latestSnapshotRef = useRef(null);
 
+  // Joysticks & Dash Triggers
   const joystickP1 = useRef({ x: 0, y: 0 });
   const joystickP2 = useRef({ x: 0, y: 0 });
+  const dashTriggerP1 = useRef(false);
+  const dashTriggerP2 = useRef(false);
 
   const gameStateRef = useRef(createInitialState());
   const [uiState, setUiState] = useState(() => ({
@@ -159,8 +162,10 @@ function App() {
           syncUi(data.state);
         } else if (data.type === 'FX_BUMP') {
           sounds.playBump();
-          effectsRef.current.triggerShake(7);
-          effectsRef.current.spawnSparks(data.x, data.y);
+          effectsRef.current.triggerShake(data.isSuper ? 15 : 8);
+          effectsRef.current.spawnSparks(data.x, data.y, data.isSuper ? '#f59e0b' : '#ffffff');
+        } else if (data.type === 'FX_DASH') {
+          sounds.playDash();
         } else if (data.type === 'PLAYER_FACE') {
           applyFaceImage(gameStateRef.current.p1, data.face);
         }
@@ -204,24 +209,34 @@ function App() {
         const p1Input = {
           x: (keys.current['KeyD'] ? 1 : 0) - (keys.current['KeyA'] ? 1 : 0) || joystickP1.current.x,
           y: (keys.current['KeyS'] ? 1 : 0) - (keys.current['KeyW'] ? 1 : 0) || joystickP1.current.y,
+          dash: keys.current['Space'] || dashTriggerP1.current,
         };
+        dashTriggerP1.current = false;
 
         const p2Input = playMode === 'ONLINE_HOST'
           ? guestInputRef.current
           : {
               x: (keys.current['ArrowRight'] ? 1 : 0) - (keys.current['ArrowLeft'] ? 1 : 0) || joystickP2.current.x,
               y: (keys.current['ArrowDown'] ? 1 : 0) - (keys.current['ArrowUp'] ? 1 : 0) || joystickP2.current.y,
+              dash: keys.current['Enter'] || keys.current['ShiftRight'] || dashTriggerP2.current,
             };
+        dashTriggerP2.current = false;
 
         const prevScore = `${state.score.p1}-${state.score.p2}-${state.gameState}`;
         
         updateGameState(state, { p1: p1Input, p2: p2Input }, dt, (event) => {
           if (event.type === 'BUMP') {
             sounds.playBump();
-            effects.triggerShake(8);
-            effects.spawnSparks(event.x, event.y);
+            effects.triggerShake(event.isSuper ? 16 : 8);
+            effects.spawnSparks(event.x, event.y, event.isSuper ? '#f59e0b' : '#ffffff');
             if (playMode === 'ONLINE_HOST') {
-              transportRef.current?.send({ type: 'FX_BUMP', x: event.x, y: event.y });
+              transportRef.current?.send({ type: 'FX_BUMP', x: event.x, y: event.y, isSuper: event.isSuper });
+            }
+          } else if (event.type === 'DASH') {
+            sounds.playDash();
+            effects.spawnSparks(event.x, event.y, '#00e5ff');
+            if (playMode === 'ONLINE_HOST') {
+              transportRef.current?.send({ type: 'FX_DASH' });
             }
           } else if (event.type === 'POWERUP') {
             sounds.playPowerUp();
@@ -266,7 +281,9 @@ function App() {
       const myInput = {
         x: (keys.current['ArrowRight'] || keys.current['KeyD'] ? 1 : 0) - (keys.current['ArrowLeft'] || keys.current['KeyA'] ? 1 : 0) || joystickP2.current.x,
         y: (keys.current['ArrowDown'] || keys.current['KeyS'] ? 1 : 0) - (keys.current['ArrowUp'] || keys.current['KeyW'] ? 1 : 0) || joystickP2.current.y,
+        dash: keys.current['Space'] || keys.current['Enter'] || dashTriggerP2.current,
       };
+      dashTriggerP2.current = false;
 
       transportRef.current?.send({
         type: 'GUEST_INPUT',
@@ -279,9 +296,11 @@ function App() {
         local.p1.x += (snap.p1.x - local.p1.x) * 0.4;
         local.p1.y += (snap.p1.y - local.p1.y) * 0.4;
         local.p1.radius = snap.p1.radius;
+        local.p1.squash = snap.p1.squash;
         local.p2.x += (snap.p2.x - local.p2.x) * 0.4;
         local.p2.y += (snap.p2.y - local.p2.y) * 0.4;
         local.p2.radius = snap.p2.radius;
+        local.p2.squash = snap.p2.squash;
 
         ctx.clearRect(-20, -20, CANVAS_SIZE + 40, CANVAS_SIZE + 40);
         drawArena(ctx, THEME.arena, snap.arenaRadius);
@@ -328,12 +347,34 @@ function App() {
           />
 
           {playMode === 'ONLINE_GUEST' ? (
-            <Joystick side="right" onMove={(v) => (joystickP2.current = v)} />
+            <>
+              <Joystick side="right" onMove={(v) => (joystickP2.current = v)} />
+              <button 
+                className="mobile-dash-btn dash-left"
+                onPointerDown={() => (dashTriggerP2.current = true)}
+              >
+                DASH!
+              </button>
+            </>
           ) : (
             <>
               <Joystick side="left" onMove={(v) => (joystickP1.current = v)} />
+              <button 
+                className="mobile-dash-btn dash-left-btn"
+                onPointerDown={() => (dashTriggerP1.current = true)}
+              >
+                DASH!
+              </button>
               {playMode === 'LOCAL' && (
-                <Joystick side="right" onMove={(v) => (joystickP2.current = v)} />
+                <>
+                  <Joystick side="right" onMove={(v) => (joystickP2.current = v)} />
+                  <button 
+                    className="mobile-dash-btn dash-right-btn"
+                    onPointerDown={() => (dashTriggerP2.current = true)}
+                  >
+                    DASH!
+                  </button>
+                </>
               )}
             </>
           )}

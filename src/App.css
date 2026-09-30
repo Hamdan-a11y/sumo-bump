@@ -20,3 +20,37 @@
     0 24px 60px -12px rgba(0, 0, 0, 0.8),
     0 0 100px rgba(0, 229, 255, 0.04);
 }
+.mobile-dash-btn {
+  position: absolute;
+  bottom: 45px;
+  padding: 16px 26px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff4d6d, #f59e0b);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 8px 24px rgba(255, 77, 109, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  touch-action: none;
+  z-index: 20;
+  transition: transform 120ms var(--ease-out);
+}
+
+.mobile-dash-btn:active {
+  transform: scale(0.92);
+}
+
+.dash-left-btn {
+  left: 175px;
+}
+
+.dash-right-btn {
+  right: 175px;
+}
+
+.dash-left {
+  left: 30px;
+}

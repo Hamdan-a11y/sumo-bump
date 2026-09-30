@@ -95,6 +95,27 @@ class SoundEffects {
     osc.start(now);
     osc.stop(now + 0.25);
   }
+    // Add this inside SoundEffects class in src/audio.js:
+  playDash() {
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(200, now);
+    osc.frequency.exponentialRampToValueAtTime(700, now + 0.15);
+
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.18);
+  }
+
 }
 
 export const sounds = new SoundEffects();

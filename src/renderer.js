@@ -50,35 +50,59 @@ export function drawPowerUp(ctx, powerUp) {
 }
 
 export function drawPlayer(ctx, player) {
-  // 1. Soft ground shadow under the fighter
+  const speed = Math.hypot(player.vx || 0, player.vy || 0);
+
+  // 1. Soft ground shadow that tracks squash
   ctx.beginPath();
-  ctx.arc(player.x, player.y + 6, player.radius, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  ctx.ellipse(player.x, player.y + player.radius * 0.7, player.radius * 0.9, player.radius * 0.35, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
   ctx.fill();
 
-  const angle = Math.atan2(player.vy || 0, player.vx || 1);
+  // 2. Dash speed trail
+  if (player.isDashing) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(player.x - player.vx * 0.04, player.y - player.vy * 0.04, player.radius * 0.9, 0, Math.PI * 2);
+    ctx.fillStyle = player.glow;
+    ctx.globalAlpha = 0.5;
+    ctx.fill();
+    ctx.restore();
+  }
 
-  // 2. IF CUSTOM DRAWING: Render the raw doodle directly!
+  // 3. LIVING CARTOON DOODLE RENDERING
   if (player.faceImage) {
     ctx.save();
     ctx.translate(player.x, player.y);
-    ctx.rotate(angle);
 
-    // Scale doodle to match player hitbox size
-    const size = player.radius * 2.4;
-    ctx.drawImage(player.faceImage, -size / 2, -size / 2, size, size);
+    // Dynamic running tilt (leans into movement, stays upright!)
+    const tilt = (player.vx / 450) * 0.25;
+    ctx.rotate(tilt);
+
+    // Running bob stride (wobbles happily when running!)
+    const bob = speed > 20 ? Math.sin(Date.now() * 0.02) * 4 : 0;
+
+    // Flip horizontally to face direction of travel!
+    const facingLeft = player.vx < -15;
+    const squash = player.squash || 1;
+    ctx.scale(facingLeft ? -1 : 1, squash);
+
+    // Draw the freeform doodle!
+    const size = player.radius * 2.6;
+    ctx.drawImage(player.faceImage, -size / 2, -size / 2 + bob, size, size);
     ctx.restore();
   } else {
     // FALLBACK: Default glowing blob with eyes
     ctx.save();
     ctx.shadowColor = player.glow;
-    ctx.shadowBlur = 15;
+    ctx.shadowBlur = player.isDashing ? 30 : 15;
     ctx.beginPath();
     ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
     ctx.fillStyle = player.color;
     ctx.fill();
     ctx.restore();
 
+    // Directional eyes
+    const angle = Math.atan2(player.vy || 0, player.vx || 1);
     const eyeOffset = player.radius * 0.45;
     const eyeX = player.x + Math.cos(angle) * eyeOffset;
     const eyeY = player.y + Math.sin(angle) * eyeOffset;
