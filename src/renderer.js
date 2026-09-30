@@ -50,43 +50,35 @@ export function drawPowerUp(ctx, powerUp) {
 }
 
 export function drawPlayer(ctx, player) {
-  // 1. Soft ground shadow
+  // 1. Soft ground shadow under the fighter
   ctx.beginPath();
   ctx.arc(player.x, player.y + 6, player.radius, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
   ctx.fill();
 
-  // 2. Blob body with neon glow
-  ctx.save();
-  ctx.shadowColor = player.glow;
-  ctx.shadowBlur = 15;
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-  ctx.fillStyle = player.color;
-  ctx.fill();
-  ctx.restore();
-
-  // 3. Render Custom Face OR default eyes
   const angle = Math.atan2(player.vy || 0, player.vx || 1);
 
+  // 2. IF CUSTOM DRAWING: Render the raw doodle directly!
   if (player.faceImage) {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius - 2, 0, Math.PI * 2);
-    ctx.clip(); // Keep drawing clipped inside the circular blob!
-
     ctx.translate(player.x, player.y);
     ctx.rotate(angle);
-    ctx.drawImage(
-      player.faceImage,
-      -player.radius,
-      -player.radius,
-      player.radius * 2,
-      player.radius * 2
-    );
+
+    // Scale doodle to match player hitbox size
+    const size = player.radius * 2.4;
+    ctx.drawImage(player.faceImage, -size / 2, -size / 2, size, size);
     ctx.restore();
   } else {
-    // Default directional eyes
+    // FALLBACK: Default glowing blob with eyes
+    ctx.save();
+    ctx.shadowColor = player.glow;
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+    ctx.fillStyle = player.color;
+    ctx.fill();
+    ctx.restore();
+
     const eyeOffset = player.radius * 0.45;
     const eyeX = player.x + Math.cos(angle) * eyeOffset;
     const eyeY = player.y + Math.sin(angle) * eyeOffset;
@@ -97,4 +89,3 @@ export function drawPlayer(ctx, player) {
     ctx.fill();
   }
 }
-

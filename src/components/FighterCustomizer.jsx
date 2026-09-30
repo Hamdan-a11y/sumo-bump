@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import './FighterCustomizer.css';
 
-const COLORS = ['#0a0d14', '#ff4d6d', '#00e5ff', '#f59e0b', '#10b981'];
+// Bright neon colors that pop on our dark arena
+const COLORS = ['#ffffff', '#00e5ff', '#ff4d6d', '#f59e0b', '#10b981'];
 
 export function FighterCustomizer({ onSave, onClose }) {
   const canvasRef = useRef(null);
@@ -15,8 +16,7 @@ export function FighterCustomizer({ onSave, onClose }) {
     canvas.height = 180;
 
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 180, 180);
+    ctx.clearRect(0, 0, 180, 180); // Transparent canvas
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   }, []);
@@ -42,7 +42,7 @@ export function FighterCustomizer({ onSave, onClose }) {
     const ctx = canvasRef.current.getContext('2d');
     const pos = getPos(e);
     ctx.strokeStyle = brushColor;
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 12; // Thicker, bolder strokes for awesome game feel
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
   };
@@ -53,8 +53,7 @@ export function FighterCustomizer({ onSave, onClose }) {
 
   const clearCanvas = () => {
     const ctx = canvasRef.current.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 180, 180);
+    ctx.clearRect(0, 0, 180, 180);
   };
 
   const handleSave = () => {
@@ -66,7 +65,10 @@ export function FighterCustomizer({ onSave, onClose }) {
   return (
     <div className="customizer-overlay">
       <div className="customizer-card">
-        <div className="customizer-title">Draw Your Face</div>
+        <div className="customizer-title">Draw Your Fighter</div>
+        <p style={{ fontSize: '13px', color: '#94a3b8', margin: '-10px 0 6px' }}>
+          Draw a character, creature, or face:
+        </p>
 
         <canvas
           ref={canvasRef}
@@ -93,7 +95,7 @@ export function FighterCustomizer({ onSave, onClose }) {
             Clear
           </button>
           <button className="lobby-btn lobby-btn-primary" onClick={handleSave}>
-            Done
+            Play With This
           </button>
         </div>
       </div>
