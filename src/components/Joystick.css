@@ -1,0 +1,39 @@
+.joystick-container {
+  position: absolute;
+  bottom: 30px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  touch-action: none;
+  user-select: none;
+  z-index: 15;
+}
+
+.joystick-left {
+  left: 30px;
+}
+
+.joystick-right {
+  right: 30px;
+}
+
+.joystick-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 54px;
+  height: 54px;
+  margin-top: -27px;
+  margin-left: -27px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #384561 0%, #1a2030 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  transition: transform 60ms var(--ease-out);
+}

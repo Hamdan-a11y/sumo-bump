@@ -1,0 +1,94 @@
+.lobby-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 15, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 30;
+}
+
+.lobby-card {
+  width: min(90vw, 420px);
+  padding: 36px 32px;
+  background: rgba(18, 23, 35, 0.9);
+  border-radius: 24px;
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 24px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.lobby-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lobby-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lobby-btn {
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+.lobby-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lobby-btn:active {
+  transform: scale(0.97);
+}
+
+.lobby-btn-primary {
+  background: #ffffff;
+  color: #0a0d14;
+  border: none;
+  font-weight: 800;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+}
+
+.lobby-btn-primary:hover {
+  background: #f1f5f9;
+}
+
+.room-invite-box {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-code-tag {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #00e5ff;
+}
